@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">SRCNNv1</string>
+    <string name="improvedimage">Improved Image</string>
+    <string name="improve_image">improve image</string>
+    <string name="capture_image">Capture image</string>
+</resources>
