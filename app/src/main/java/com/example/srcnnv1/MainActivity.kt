@@ -1,5 +1,6 @@
 package com.example.srcnnv1
 
+//import com.example.srcnnv1.R
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -9,13 +10,8 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-//import com.example.srcnnv1.R
 import com.example.srcnnv1.ml.Esrgan1
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,44 +36,43 @@ class MainActivity : AppCompatActivity() {
         Log.d("debugging", "Main Activity created")
         //image processor
 
-        val imageProcessor = ImageProcessor.Builder()
-            .add(ResizeOp(50, 50, ResizeOp.ResizeMethod.BILINEAR))
-            .build()
-
         captureBtn.setOnClickListener {
-            Log.d("debugging", "Capture button clicked")
-            val intent: Intent = Intent()
+//            Log.d("debugging", "Capture button clicked")
+            val intent = Intent()
             intent.setAction(Intent.ACTION_GET_CONTENT)
             intent.setType("image/*")
             startActivityForResult(intent, 100)
         }
 
         improveBtn.setOnClickListener {
-            Log.d("debugging", "Improve button clicked")
+//            Log.d("debugging", "Improve button clicked")
+            val startTime = System.currentTimeMillis()
+//            var tensorImage: TensorImage = TensorImage(DataType.UINT8)
 
-            var tensorImage: TensorImage = TensorImage(DataType.UINT8)
+//            if (::bitmap.isInitialized) {
+            val model = Esrgan1.newInstance(myContext)
 
-            if (::bitmap.isInitialized) {
-                val model = Esrgan1.newInstance(myContext)
+            // Creates inputs for reference.
+            val originalImage = TensorImage.fromBitmap(bitmap)
 
-// Creates inputs for reference.
-                val originalImage = TensorImage.fromBitmap(bitmap)
-
-// Runs model inference and gets result.
-                val outputs = model.process(originalImage)
-                val enhancedImage = outputs.enhancedImageAsTensorImage
-                val enhancedImageBitmap = enhancedImage.bitmap
+            // Runs model inference and gets result.
+            val outputs = model.process(originalImage)
+            val enhancedImage = outputs.enhancedImageAsTensorImage
+            val enhancedImageBitmap = enhancedImage.bitmap
 
 // Releases model resources if no longer used.
-                model.close()
-                myOutputImage.setImageBitmap(enhancedImageBitmap)
+            model.close()
+            myOutputImage.setImageBitmap(enhancedImageBitmap)
 
-            } else {
-                Log.d("debugging", "Bitmap is not initialized")
-            }
+//            } else {
+//                Log.d("debugging", "Bitmap is not initialized")
+//            }
 
+            val endTime = System.currentTimeMillis()
             val maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024
             Log.d("debugging", "Max memory: $maxMemory MB")
+            val diff = endTime - startTime
+            Log.d("debugging", "timeTaken: $diff")
 
         }
     }
@@ -86,10 +81,9 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == 100) {
-            var uri =
-                data?.data        //Uniform Resource Indicator: read the image from this location
+            val uri = data?.data        //Uniform Resource Indicator: read the image from this location
             bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, 128, 128)
+            bitmap = Bitmap.createScaledBitmap(bitmap, 128, 128, true)
             myImagePreview.setImageBitmap(bitmap)
 
             Log.d("debugging", "Bitmap successfully imported / captured")
